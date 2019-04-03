@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>WebAuthn Demo</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- <script src="js/script.js"></script> -->
+</head>
+
+<body>
+
+  Username:<br>
+  <input type="text" name="username" id="email" placeholder="i.e. foo@bar.com">
+  <br>
+  <br>
+  <button onclick="registerUser()">Register</button>
+  <button onclick="loginUser()">Login</button>
+
+  <script>
+
+    $(document).ready(function () {
+      // check whether current browser supports WebAuthn
+      if (!window.PublicKeyCredential) {
+        alert("Error: this browser does not support WebAuthn");
+        return;
+      }
+    });
+
+    // decode to ArrayBuffer
+    function bufferDecode(value) {
+      return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    }
+
+    // replaces are for base64url
+    // see https://en.wikipedia.org/wiki/Base64#URL_applications and
+    // URLEncodedBase64 in github.com/duo-labs/webauthn
+    function bufferEncode(value) {
+      return btoa(String.fromCharCode.apply(null, (value)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "");;
+    }
+
+    function registerUser() {
+
+      username = $("#email").val()
+      if (username === "") {
+        alert("Please enter a username");
+        return;
+      }
+
+      $.get('/register/begin/' + username, null, null, 'json')
+        // TODO: add '.fail()/.catch()' function? 
+        .done(function (credentialCreationOptions) {
+
+          console.log("credentialCreationOptions")
+          console.log(credentialCreationOptions)
+
+          // convert challenge (must be in ArrayBuffer)
+          credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
+          // convert user id (must be in ArrayBuffer)
+          credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
+
+          if (credentialCreationOptions.publicKey.excludeCredentials) {
+              for (var i = 0; i < credentialCreationOptions.publicKey.excludeCredentials.length; i++) {
+                credentialCreationOptions.publicKey.excludeCredentials[i].id = bufferDecode(credentialCreationOptions.publicKey.excludeCredentials[i].id);
+              }
+          }
+          // create new cred
+          navigator.credentials.create({
+            publicKey: credentialCreationOptions.publicKey
+          }).then(function (credential) {
+
+            // TODO: can move 'Uint8Array' code to bufferEncode()?
+            let attestationObject = new Uint8Array(credential.response.attestationObject);
+            let clientDataJSON = new Uint8Array(credential.response.clientDataJSON);
+            let rawId = new Uint8Array(credential.rawId);
+
+            $.post(
+              '/register/finish/' + username,
+              JSON.stringify({
+                id: credential.id,
+                rawId: bufferEncode(rawId),
+                type: credential.type,
+                response: {
+                  attestationObject: bufferEncode(attestationObject),
+                  clientDataJSON: bufferEncode(clientDataJSON),
+                },
+              }),
+              function (data) {
+                alert("successfully registered " + username + "!")
+              },
+              'json'
+            ).fail(function (error) {
+              console.log("error registering user")
+              console.log(error)
+              alert("failed to register user: " + error)
+            })
+
+            // registerNewCredential(credential);
+          }).catch(function (error) {
+            console.log("error creating PublicKeyCredential");
+            console.log(error)
+          });
+        }).fail(function (error){
+          console.log(error)
+        });
+    }
+
+    function loginUser() {
+
+      username = $("#email").val()
+
+      if (username === "") {
+        alert("Please enter a username");
+        return;
+      }
+
+      // TODO: move below register stuff
+      $.get('/login/begin/' + username, null, null, 'json')
+        .done(function (credentialRequestOptions) {
+          console.log("credentialRequestOptions")
+          console.log(credentialRequestOptions)
+          credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
+          credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
+            listItem.id = bufferDecode(listItem.id)
+          });
+          navigator.credentials.get({
+            publicKey: credentialRequestOptions.publicKey
+          }).then(function (assertion) {
+            console.log(assertion);
+            let authData = new Uint8Array(assertion.response.authenticatorData);
+            let clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
+            let rawId = new Uint8Array(assertion.rawId);
+            let sig = new Uint8Array(assertion.response.signature);
+            let userHandle = new Uint8Array(assertion.response.userHandle);
+            $.post(
+              '/login/finish/' + username,
+              JSON.stringify({
+                id: assertion.id,
+                rawId: bufferEncode(rawId),
+                type: assertion.type,
+                response: {
+                  authenticatorData: bufferEncode(authData),
+                  clientDataJSON: bufferEncode(clientDataJSON),
+                  signature: bufferEncode(sig),
+                  userHandle: bufferEncode(userHandle),
+                },
+              }),
+              function (data) {
+                alert("successfully logged in " + username + "!")
+              },
+              'json'
+            ).fail(function (error) {
+              console.log("error logging in user")
+              console.log(error)
+              alert("failed to login user: " + error)
+            })
+          })
+        }).catch(function (error) {
+          console.log("error")
+          console.log(error)
+        });
+    }
+
+  </script>
+</body>
+
+</html>
