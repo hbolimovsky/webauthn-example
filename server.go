@@ -28,7 +28,7 @@ func main() {
 	var err error
 	web, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: "Foobar Corp.",     // Display Name for your site
-		RPID:          "localhost",        // Generally the FQDN for your site
+		RPID:          "localhost",        // Generally the domain name for your site
 		RPOrigin:      "http://localhost", // The origin URL for WebAuthn requests
 		// RPIcon: "https://duo.com/logo.png", // Optional icon URL for your site
 	})
@@ -208,14 +208,15 @@ func FinishLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	credential, err := web.FinishLogin(user, sessionData, r)
+	// in an actual implementation, we should perform additional checks on
+	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
+	// and then increment the credentials counter
+	_, err = web.FinishLogin(user, sessionData, r)
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	log.Println("credential:", credential)
 
 	// handle successful login
 	jsonResponse(w, "Login Success", http.StatusOK)
