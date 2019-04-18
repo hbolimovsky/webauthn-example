@@ -14,19 +14,14 @@ import (
 
 // TODO: use pointers or values for User?
 
-// TODO: change 'web' to 'webauthn/webAuthN'?
-var web *webauthn.WebAuthn
-var users *userdb
+var webAuthn *webauthn.WebAuthn
+var userDB *userdb
 var sessionStore *session.Store
-
-// keeps track of a user's challenge
-// during registration
-// var sessions = make(map[string]webauthn.SessionData)
 
 func main() {
 
 	var err error
-	web, err = webauthn.New(&webauthn.Config{
+	webAuthn, err = webauthn.New(&webauthn.Config{
 		RPDisplayName: "Foobar Corp.",     // Display Name for your site
 		RPID:          "localhost",        // Generally the domain name for your site
 		RPOrigin:      "http://localhost", // The origin URL for WebAuthn requests
@@ -37,7 +32,7 @@ func main() {
 		log.Fatal("failed to create WebAuthn from Config: ", err)
 	}
 
-	users = DB()
+	userDB = DB()
 
 	sessionStore, err = session.NewStore()
 	if err != nil {
@@ -69,18 +64,18 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get user
-	user, err := users.GetUser(username)
+	user, err := userDB.GetUser(username)
 	// user doesn't exist, create new user
 	if err != nil {
 		displayName := strings.Split(username, "@")[0]
 		user = NewUser(username, displayName)
-		users.PutUser(user)
+		userDB.PutUser(user)
 	}
 
-	options, sessionData, err := web.BeginRegistration(user)
+	options, sessionData, err := webAuthn.BeginRegistration(user)
 	// need to use to override default 'AuthenticatorAttachment: protocol.CrossPlatform,'
 	//
-	// options, sessionData, err := web.BeginRegistration(user,
+	// options, sessionData, err := webauthn.BeginRegistration(user,
 	// 	webauthn.WithAuthenticatorSelection(
 	// 		protocol.AuthenticatorSelection{
 	// 			AuthenticatorAttachment: protocol.AuthenticatorAttachment(""),
@@ -90,7 +85,6 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 	// // webauthn.WithConveyancePreference(protocol.ConveyancePreference(
 	// // 	"none"))
 	// )
-	// TODO: might not be InternalServerError
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusInternalServerError)
@@ -113,11 +107,10 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 
 	// get username
 	vars := mux.Vars(r)
-	// TODO: use 'ok'?
 	username := vars["username"]
 
 	// get user
-	user, err := users.GetUser(username)
+	user, err := userDB.GetUser(username)
 	// user doesn't exist
 	if err != nil {
 		log.Println(err)
@@ -133,7 +126,7 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	credential, err := web.FinishRegistration(user, sessionData, r)
+	credential, err := webAuthn.FinishRegistration(user, sessionData, r)
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusBadRequest)
@@ -150,11 +143,10 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 
 	// get username
 	vars := mux.Vars(r)
-	// TODO: use 'ok'?
 	username := vars["username"]
 
 	// get user
-	user, err := users.GetUser(username)
+	user, err := userDB.GetUser(username)
 
 	// user doesn't exist
 	if err != nil {
@@ -163,8 +155,7 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	options, sessionData, err := web.BeginLogin(user)
-	// TODO: might not be InternalServerError
+	options, sessionData, err := webAuthn.BeginLogin(user)
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusInternalServerError)
@@ -187,11 +178,10 @@ func FinishLogin(w http.ResponseWriter, r *http.Request) {
 
 	// get username
 	vars := mux.Vars(r)
-	// TODO: use 'ok'?
 	username := vars["username"]
 
 	// get user
-	user, err := users.GetUser(username)
+	user, err := userDB.GetUser(username)
 
 	// user doesn't exist
 	if err != nil {
@@ -211,7 +201,7 @@ func FinishLogin(w http.ResponseWriter, r *http.Request) {
 	// in an actual implementation, we should perform additional checks on
 	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
 	// and then increment the credentials counter
-	_, err = web.FinishLogin(user, sessionData, r)
+	_, err = webAuthn.FinishLogin(user, sessionData, r)
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusBadRequest)
