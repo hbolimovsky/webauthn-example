@@ -12,8 +12,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TODO: use pointers or values for User?
-
 var webAuthn *webauthn.WebAuthn
 var userDB *userdb
 var sessionStore *session.Store
@@ -29,14 +27,14 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal("failed to create WebAuthn from Config: ", err)
+		log.Fatal("failed to create WebAuthn from config:", err)
 	}
 
 	userDB = DB()
 
 	sessionStore, err = session.NewStore()
 	if err != nil {
-		log.Fatal("failed to create session Store: ", err)
+		log.Fatal("failed to create session store:", err)
 	}
 
 	r := mux.NewRouter()
@@ -72,19 +70,17 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		userDB.PutUser(user)
 	}
 
+	// generate PublicKeyCredentialCreationOptions, session data
 	options, sessionData, err := webAuthn.BeginRegistration(user)
-	// need to use to override default 'AuthenticatorAttachment: protocol.CrossPlatform,'
-	//
-	// options, sessionData, err := webauthn.BeginRegistration(user,
-	// 	webauthn.WithAuthenticatorSelection(
-	// 		protocol.AuthenticatorSelection{
-	// 			AuthenticatorAttachment: protocol.AuthenticatorAttachment(""),
-	// 			RequireResidentKey:      false,
-	// 			UserVerification:        protocol.VerificationPreferred,
-	// 		}),
-	// // webauthn.WithConveyancePreference(protocol.ConveyancePreference(
-	// // 	"none"))
+
+	// replace with above to implement exclude credentials check
+	// options, sessionData, err := webAuthn.BeginRegistration(
+	// 	user,
+	// 	func(creationOptions *protocol.PublicKeyCredentialCreationOptions) {
+	// 		creationOptions.CredentialExcludeList = user.CredentialExcludeList()
+	// 	},
 	// )
+
 	if err != nil {
 		log.Println(err)
 		jsonResponse(w, err.Error(), http.StatusInternalServerError)
@@ -100,7 +96,6 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, options, http.StatusOK)
-	return
 }
 
 func FinishRegistration(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +131,6 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 	user.AddCredential(*credential)
 
 	jsonResponse(w, "Registration Success", http.StatusOK)
-	return
 }
 
 func BeginLogin(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +149,7 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// generate PublicKeyCredentialRequestOptions, session data
 	options, sessionData, err := webAuthn.BeginLogin(user)
 	if err != nil {
 		log.Println(err)
@@ -171,7 +166,6 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, options, http.StatusOK)
-	return
 }
 
 func FinishLogin(w http.ResponseWriter, r *http.Request) {

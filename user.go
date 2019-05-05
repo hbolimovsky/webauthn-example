@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 
+	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 )
 
@@ -50,12 +51,12 @@ func (u User) WebAuthnDisplayName() string {
 	return u.displayName
 }
 
-// WebAuthnIcon() is not (yet) implemented
+// WebAuthnIcon is not (yet) implemented
 func (u User) WebAuthnIcon() string {
 	return ""
 }
 
-// TODO: should 'cred' be a pointer?
+// AddCredential associates the credential to the user
 func (u *User) AddCredential(cred webauthn.Credential) {
 	u.credentials = append(u.credentials, cred)
 }
@@ -63,4 +64,20 @@ func (u *User) AddCredential(cred webauthn.Credential) {
 // WebAuthnCredentials returns credentials owned by the user
 func (u User) WebAuthnCredentials() []webauthn.Credential {
 	return u.credentials
+}
+
+// CredentialExcludeList returns a CredentialDescriptor array filled
+// with all the user's credentials
+func (u User) CredentialExcludeList() []protocol.CredentialDescriptor {
+
+	credentialExcludeList := []protocol.CredentialDescriptor{}
+	for _, cred := range u.credentials {
+		descriptor := protocol.CredentialDescriptor{
+			Type:         protocol.PublicKeyCredentialType,
+			CredentialID: cred.ID,
+		}
+		credentialExcludeList = append(credentialExcludeList, descriptor)
+	}
+
+	return credentialExcludeList
 }

@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-// TODO: read up on concurrency
-
 type userdb struct {
 	users map[string]*User
 	mu    sync.RWMutex
