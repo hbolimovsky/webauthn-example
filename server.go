@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/duo-labs/webauthn.io/session"
+	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gorilla/mux"
 )
@@ -70,16 +71,25 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		userDB.PutUser(user)
 	}
 
-	// generate PublicKeyCredentialCreationOptions, session data
-	options, sessionData, err := webAuthn.BeginRegistration(user)
+	authSelection := protocol.AuthenticatorSelection{
+		// since AuthenticatorAttachment defaults to CrossPlatform need to
+		// explicitly leave blank, which tells the user agent (browser)
+		// the RP doesn't have a preference, and the user can choose to use
+		// a roaming or platform authenticator
+		RequireResidentKey: false,
+		UserVerification:   protocol.VerificationPreferred,
+	}
 
-	// replace with above to implement exclude credentials check
-	// options, sessionData, err := webAuthn.BeginRegistration(
-	// 	user,
-	// 	func(creationOptions *protocol.PublicKeyCredentialCreationOptions) {
-	// 		creationOptions.CredentialExcludeList = user.CredentialExcludeList()
-	// 	},
-	// )
+	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
+		credCreationOpts.AuthenticatorSelection = authSelection
+		credCreationOpts.CredentialExcludeList = user.CredentialExcludeList()
+	}
+
+	// generate PublicKeyCredentialCreationOptions, session data
+	options, sessionData, err := webAuthn.BeginRegistration(
+		user,
+		registerOptions,
+	)
 
 	if err != nil {
 		log.Println(err)
