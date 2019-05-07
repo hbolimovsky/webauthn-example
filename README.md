@@ -4,7 +4,7 @@ This library implements a simple, basic WebAuthn client and server based on [duo
 
 ## Blog Post
 
-Coming soon!
+You can check it out [here](https://www.herbie.dev/blog/webauthn-basic-web-client-server/)
 
 ## Quickstart
 
