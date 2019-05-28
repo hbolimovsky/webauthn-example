@@ -9,6 +9,8 @@ github.com/duo-labs/webauthn v0.0.0-20190412174307-5d173800ac1a h1:B8DY2bPCtDHEF
 github.com/duo-labs/webauthn v0.0.0-20190412174307-5d173800ac1a/go.mod h1:SyYYacZh3ECQyRSNQ9uM0xVTAJ2Qr0iL/dJoHdoGjoQ=
 github.com/duo-labs/webauthn v0.0.0-20190508155413-aa748d708ed1 h1:s9fJH8NKt3X3oDUTUTshUdKP+BWvfeEicnnZyDCUyQM=
 github.com/duo-labs/webauthn v0.0.0-20190508155413-aa748d708ed1/go.mod h1:2OpruE7IJ4Zc0LCu2R0oadLUxAV6+kE3QWNOtSHf3j4=
+github.com/duo-labs/webauthn v0.0.0-20190521121529-2fa2ec45d1eb h1:pDe+wZfCsn3x+cESvcKvgkbmV0HzGQ/MCis1ZxpPqsc=
+github.com/duo-labs/webauthn v0.0.0-20190521121529-2fa2ec45d1eb/go.mod h1:2OpruE7IJ4Zc0LCu2R0oadLUxAV6+kE3QWNOtSHf3j4=
 github.com/duo-labs/webauthn.io v0.0.0-20190422161126-2114ce8dfd12 h1:tIAhMgGjqnJSF2araeT6qJnYoo2AtGxwFJD87xcxDFk=
 github.com/duo-labs/webauthn.io v0.0.0-20190422161126-2114ce8dfd12/go.mod h1:iFBHw28kV3+cR1oJwGC7u+g9OcrIxhBkCArGF2/q+kg=
 github.com/google/certificate-transparency-go v1.0.21 h1:Yf1aXowfZ2nuboBsg7iYGLmwsOARdV86pfH3g95wXmE=

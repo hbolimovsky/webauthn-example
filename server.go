@@ -71,17 +71,7 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		userDB.PutUser(user)
 	}
 
-	authSelection := protocol.AuthenticatorSelection{
-		// since AuthenticatorAttachment defaults to CrossPlatform need to
-		// explicitly leave blank, which tells the user agent (browser)
-		// the RP doesn't have a preference, and the user can choose to use
-		// a roaming or platform authenticator
-		RequireResidentKey: false,
-		UserVerification:   protocol.VerificationPreferred,
-	}
-
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
-		credCreationOpts.AuthenticatorSelection = authSelection
 		credCreationOpts.CredentialExcludeList = user.CredentialExcludeList()
 	}
 
