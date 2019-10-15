@@ -57,7 +57,7 @@
         },
         'json')
         .then((credentialCreationOptions) => {
-
+          console.log(credentialCreationOptions)
           credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
           credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
           if (credentialCreationOptions.publicKey.excludeCredentials) {
@@ -71,7 +71,7 @@
           })
         })
         .then((credential) => {
-
+          console.log(credential)
           let attestationObject = credential.response.attestationObject;
           let clientDataJSON = credential.response.clientDataJSON;
           let rawId = credential.rawId;
@@ -118,7 +118,7 @@
         },
         'json')
         .then((credentialRequestOptions) => {
-
+          console.log(credentialRequestOptions)
           credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
           credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
             listItem.id = bufferDecode(listItem.id)
@@ -129,7 +129,7 @@
           })
         })
         .then((assertion) => {
-
+          console.log(assertion)
           let authData = assertion.response.authenticatorData;
           let clientDataJSON = assertion.response.clientDataJSON;
           let rawId = assertion.rawId;

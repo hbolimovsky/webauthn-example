@@ -44,3 +44,11 @@ Upon successful registration, you'll see an alert saying you successfully regist
 #### Login
 
 Press the login button and follow the instructions. The login process is identical (user side) to the registration process.
+
+## Extra
+
+### WebAuthn BLE Support In Chrome
+
+In your Chrome broswer go to `chrome://flags/` and search for 'web auth', then set 'Web Authentication API BLE support' and 'Web Authentication caBLE support' to `enabled`
+
+![chrome_ble_flags.png](chrome_ble_flags.png)
