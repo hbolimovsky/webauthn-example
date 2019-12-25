@@ -37,7 +37,7 @@ To test that the demo is working properly, enter an email like `foo@bar.com` and
 
 ![auth_example.png](auth_example.png)
 
-Upon successful registration, you'll see an alert saying you successfully registered, similar to the this:
+Upon successful registration, you'll see an alert saying you successfully registered, similar to this:
 
 ![success_register.png](success_register.png)
 
