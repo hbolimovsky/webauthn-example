@@ -20,7 +20,10 @@
   <script>
 
     $(document).ready(function () {
-
+      if (!window.isSecureContext) {
+        alert("Error: WebAuthentication is only available in a secure context (localhost or https://)");
+        return;
+      }
       // check whether current browser supports WebAuthn
       if (!window.PublicKeyCredential) {
         alert("Error: this browser does not support WebAuthn");
