@@ -19,11 +19,13 @@ var sessionStore *session.Store
 
 func main() {
 
+	serverAddress := ":8080"
+
 	var err error
 	webAuthn, err = webauthn.New(&webauthn.Config{
-		RPDisplayName: "Foobar Corp.",     // Display Name for your site
-		RPID:          "localhost",        // Generally the domain name for your site
-		RPOrigin:      "http://localhost", // The origin URL for WebAuthn requests
+		RPDisplayName: "Foobar Corp.",                                   // Display Name for your site
+		RPID:          "localhost",                                      // Generally the domain name for your site
+		RPOrigin:      fmt.Sprintf("http://localhost%s", serverAddress), // The origin URL for WebAuthn requests
 		// RPIcon: "https://duo.com/logo.png", // Optional icon URL for your site
 	})
 
@@ -47,7 +49,6 @@ func main() {
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./")))
 
-	serverAddress := ":8080"
 	log.Println("starting server at", serverAddress)
 	log.Fatal(http.ListenAndServe(serverAddress, r))
 }
