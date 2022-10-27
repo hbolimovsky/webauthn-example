@@ -10,5 +10,7 @@ require (
 	github.com/gorilla/sessions v1.1.3 // indirect
 	github.com/jinzhu/gorm v1.9.11 // indirect
 	github.com/sirupsen/logrus v1.4.1 // indirect
+	github.com/ugorji/go/codec v1.2.7 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.2.2 // indirect
 )
